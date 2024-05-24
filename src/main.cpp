@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
     int value{};
     if(argc > 1) {
         value = atoi(argv[1]);
-    } else value = 3;
+    } else value = 8;
     print_binary(value);
     cout << endl;
     uint64_t fvalue = feistel_keygen(value);
@@ -107,7 +107,7 @@ uint64_t feistel_keygen(uint64_t key) {
         }
         
         if(!(count&1)) {
-            new_key |= (uint64_t)(pow(2, i*8));
+            new_key |= 1UL << 8*i;
         }
         key >>= 7UL;
         
