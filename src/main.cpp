@@ -1,18 +1,28 @@
 #include <crypt.h>
 #include <iostream>
+#include <math.h>
 
 using namespace std;
 
 uint64_t cyclePRNG(void);
 uint64_t des_encrypt(uint64_t, uint64_t);
 uint64_t rearrangement(uint64_t, uint16_t*);
+void print_binary(uint64_t);
+uint64_t feistel_keygen(uint64_t);
 
 static inline uint64_t rdtsc(void);
 
-int main() {
-    for(int i = 0; i < 40; i++) {
-        cout << cyclePRNG() << endl;
-    }
+int main(int argc, char *argv[]) {
+    int value{};
+    if(argc > 1) {
+        value = atoi(argv[1]);
+    } else value = 3;
+    print_binary(value);
+    cout << endl;
+    uint64_t fvalue = feistel_keygen(value);
+    print_binary(fvalue);
+    cout << endl;
+    cout << fvalue;
 
     return 0;
 }
@@ -63,9 +73,47 @@ uint64_t feistel_r_extend(uint32_t r_old) {
     return r_old_extended;
 } 
 
+void print_binary(uint64_t value) {
+    char str[64]{};
+    int i{};
+    do {
+        if(value%2) {
+            str[63-i]='1';
+        } 
+        else str[63-i]='0';
+        i++;
+        value >>= 1;
+    } while(value);
+    i--;
+    while(i>=0) {
+        putchar(str[63-i]);
+        i--;
+    }
+}
 // it convert a 56-bit key to a 48-bit key
 uint64_t feistel_keygen(uint64_t key) {
-
+    int count{};
+    // add inv parity bit
+    uint64_t new_key{};
+    for(uint64_t i = 0; i < 8; i++) {
+        count=0;
+        uint64_t temp = key & 0b1111111;
+        new_key |= temp << 8*i + 1; 
+        while(temp) {
+            if(temp&1) {
+                count++;
+            }
+            temp >>= 1;
+        }
+        
+        if(!(count&1)) {
+            new_key |= (uint64_t)(pow(2, i*8));
+        }
+        key >>= 7UL;
+        
+        
+    }     
+    return new_key;
 }
 
 // feistel's function that repeats 16 cycles
